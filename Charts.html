@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ECharts 数据可视化示例</title>
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@6.0.0/dist/echarts.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -86,7 +86,7 @@
         .chart-box {
             flex: 1 1 45%;
             min-width: 300px;
-            height: 400px;
+            height: 450px;
             background: white;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -109,7 +109,7 @@
 
         .chart {
             width: 100%;
-            height: 340px;
+            height: 380px;
         }
 
         footer {
@@ -144,6 +144,7 @@
         <button class="chart-btn" data-chart="line">折线图</button>
         <button class="chart-btn" data-chart="pie">饼图</button>
         <button class="chart-btn" data-chart="scatter">散点图</button>
+        <button class="chart-btn" data-chart="gantt">甘特图</button>
     </div>
 
     <div class="chart-container">
@@ -166,10 +167,15 @@
             <div class="chart-title">价格与销量关系</div>
             <div class="chart" id="scatterChart"></div>
         </div>
+
+        <div class="chart-box" data-type="gantt">
+            <div class="chart-title">项目进度甘特图</div>
+            <div class="chart" id="ganttChart"></div>
+        </div>
     </div>
 
     <footer>
-        <p>© 2023 ECharts 数据可视化示例 | 使用 ECharts 5.4.3 构建</p>
+        <p>© 2023 ECharts 数据可视化示例 | 使用 ECharts 6.0.0 构建</p>
     </footer>
 </div>
 
@@ -181,9 +187,35 @@
         const lineChart = echarts.init(document.getElementById('lineChart'));
         const pieChart = echarts.init(document.getElementById('pieChart'));
         const scatterChart = echarts.init(document.getElementById('scatterChart'));
+        const ganttChart = echarts.init(document.getElementById('ganttChart'));
+
+        // 通用toolbox配置
+        const toolboxConfig = {
+            feature: {
+                saveAsImage: {
+                    title: '保存为图片',
+                    pixelRatio: 2
+                },
+                dataView: {
+                    title: '数据视图',
+                    readOnly: false,
+                    lang: ['数据视图', '关闭', '刷新']
+                },
+                restore: {
+                    title: '还原'
+                },
+                dataZoom: {
+                    title: {
+                        zoom: '区域缩放',
+                        back: '区域缩放还原'
+                    }
+                }
+            }
+        };
 
         // 柱状图配置
         const barOption = {
+            toolbox: toolboxConfig,
             tooltip: {
                 trigger: 'axis',
                 axisPointer: {
@@ -241,6 +273,7 @@
 
         // 折线图配置
         const lineOption = {
+            toolbox: toolboxConfig,
             tooltip: {
                 trigger: 'axis'
             },
@@ -300,6 +333,7 @@
 
         // 饼图配置
         const pieOption = {
+            toolbox: toolboxConfig,
             tooltip: {
                 trigger: 'item',
                 formatter: '{a} <br/>{b}: {c} ({d}%)'
@@ -346,6 +380,7 @@
 
         // 散点图配置
         const scatterOption = {
+            toolbox: toolboxConfig,
             tooltip: {
                 trigger: 'item',
                 formatter: function (params) {
@@ -417,11 +452,97 @@
             }]
         };
 
+        // 甘特图配置
+        const ganttOption = {
+            toolbox: toolboxConfig,
+            tooltip: {
+                formatter: function(params) {
+                    return `${params.name}: ${params.data[3]}天<br/>开始: ${params.data[0]}<br/>结束: ${params.data[1]}`;
+                }
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'time',
+                axisLine: {
+                    lineStyle: {
+                        color: '#9E9E9E'
+                    }
+                },
+                splitLine: {
+                    lineStyle: {
+                        color: '#f0f0f0'
+                    }
+                }
+            },
+            yAxis: {
+                type: 'category',
+                data: ['需求分析', 'UI设计', '前端开发', '后端开发', '测试', '部署上线'],
+                axisLine: {
+                    lineStyle: {
+                        color: '#9E9E9E'
+                    }
+                }
+            },
+            series: [{
+                type: 'bar',
+                barWidth: 12,
+                itemStyle: {
+                    color: function(params) {
+                        const colorList = [
+                            '#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272'
+                        ];
+                        return colorList[params.dataIndex % colorList.length];
+                    }
+                },
+                label: {
+                    show: true,
+                    position: 'insideLeft',
+                    formatter: '{b}'
+                },
+                data: [
+                    {
+                        name: '需求分析',
+                        value: ['2023-01-01', '2023-01-10', '需求分析', 10]
+                    },
+                    {
+                        name: 'UI设计',
+                        value: ['2024-01-08', '2024-01-20', 'UI设计', 13]
+                    },
+                    {
+                        name: '前端开发',
+                        value: ['2023-01-15', '2023-02-10', '前端开发', 27]
+                    },
+                    {
+                        name: '后端开发',
+                        value: ['2023-01-25', '2023-02-15', '后端开发', 22]
+                    },
+                    {
+                        name: '测试',
+                        value: ['2023-02-12', '2023-02-25', '测试', 14]
+                    },
+                    {
+                        name: '部署上线',
+                        value: ['2023-02-23', '2023-03-01', '部署上线', 7]
+                    }
+                ],
+                encode: {
+                    x: [0, 1],
+                    y: 2
+                }
+            }]
+        };
+
         // 渲染图表
         barChart.setOption(barOption);
         lineChart.setOption(lineOption);
         pieChart.setOption(pieOption);
         scatterChart.setOption(scatterOption);
+        ganttChart.setOption(ganttOption);
 
         // 窗口大小变化时重绘图表
         window.addEventListener('resize', function() {
@@ -429,6 +550,7 @@
             lineChart.resize();
             pieChart.resize();
             scatterChart.resize();
+            ganttChart.resize();
         });
 
         // 图表切换功能
