@@ -452,89 +452,142 @@
             }]
         };
 
-        // 甘特图配置
+        // 横向柱状图配置
+
+        // 模拟数据
+        const dates = ['2023-10-01', '2023-10-02', '2023-10-03', '2023-10-04', '2023-10-05', '2023-10-06', '2023-10-07'];
+        const categories = ['电子产品', '服装', '食品', '图书', '家居用品'];
+        // 生成两组数据
+        function generateSeriesData(name, baseValue) {
+            const data = [];
+            for (let i = 0; i < dates.length; i++) {
+                const seriesItem = {
+                    name: dates[i],
+                    type: 'bar',
+                    data: []
+                };
+
+                for (let j = 0; j < categories.length; j++) {
+                    // 生成随机数据，但确保有一定规律
+                    const value = baseValue + Math.floor(Math.random() * 100) + (i * 20) + (j * 10);
+                    seriesItem.data.push(value);
+                }
+
+                data.push(seriesItem);
+            }
+            return { name, data };
+        }
+
+        // 生成两组数据系列
+        const series1 = generateSeriesData('线上销售额', 100);
+        const series2 = generateSeriesData('线下销售额', 50);
+
         const ganttOption = {
             toolbox: toolboxConfig,
-            tooltip: {
-                formatter: function(params) {
-                    return `${params.name}: ${params.data[3]}天<br/>开始: ${params.data[0]}<br/>结束: ${params.data[1]}`;
-                }
-            },
             grid: {
                 left: '3%',
-                right: '4%',
+                right: '7%',
                 bottom: '3%',
                 containLabel: true
             },
-            xAxis: {
-                type: 'time',
-                axisLine: {
-                    lineStyle: {
-                        color: '#9E9E9E'
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'shadow'
+                },
+                formatter: function(params) {
+                    let result = params[0].name + '<br/>';
+                    for (let i = 0; i < params.length; i++) {
+                        const item = params[i];
+                        result += `${item.marker} ${item.seriesName}: ${item.value} 万元<br/>`;
                     }
+                    return result;
+                }
+            },
+            legend: {
+                data: [series1.name, series2.name],
+                top: 40,
+                textStyle: {
+                    fontSize: 13
+                }
+            },
+            // 横向柱状图：x轴为数值轴，y轴为分类轴
+            xAxis: {
+                type: 'value',
+                name: '销售额（万元）',
+                nameLocation: 'end',
+                axisLabel: {
+                    formatter: '{value}'
                 },
                 splitLine: {
                     lineStyle: {
-                        color: '#f0f0f0'
+                        type: 'dashed'
                     }
                 }
             },
             yAxis: {
                 type: 'category',
-                data: ['需求分析', 'UI设计', '前端开发', '后端开发', '测试', '部署上线'],
+                data: categories,
+                axisLabel: {
+                    fontSize: 13
+                },
                 axisLine: {
-                    lineStyle: {
-                        color: '#9E9E9E'
-                    }
+                    show: true
                 }
             },
-            series: [{
-                type: 'bar',
-                barWidth: 12,
-                itemStyle: {
-                    color: function(params) {
-                        const colorList = [
-                            '#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272'
-                        ];
-                        return colorList[params.dataIndex % colorList.length];
-                    }
+            // 数据系列配置
+            series: [
+                {
+                    name: series1.name,
+                    type: 'bar',
+                    stack: 'total',
+                    label: {
+                        show: true,
+                        position: 'right',
+                        formatter: '{c}'
+                    },
+                    itemStyle: {
+                        color: '#1890ff',
+                        borderRadius: [0, 5, 5, 0]
+                    },
+                    emphasis: {
+                        focus: 'series',
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowColor: 'rgba(24, 144, 255, 0.5)'
+                        }
+                    },
+                    data: (function() {
+                        // 从生成的系列数据中提取第一天数据作为示例
+                        return series1.data[0].data;
+                    })()
                 },
-                label: {
-                    show: true,
-                    position: 'insideLeft',
-                    formatter: '{b}'
-                },
-                data: [
-                    {
-                        name: '需求分析',
-                        value: ['2023-01-01', '2023-01-10', '需求分析', 10]
+                {
+                    name: series2.name,
+                    type: 'bar',
+                    stack: 'total',
+                    label: {
+                        show: true,
+                        position: 'right',
+                        formatter: '{c}'
                     },
-                    {
-                        name: 'UI设计',
-                        value: ['2024-01-08', '2024-01-20', 'UI设计', 13]
+                    itemStyle: {
+                        color: '#36cfc9',
+                        borderRadius: [0, 5, 5, 0]
                     },
-                    {
-                        name: '前端开发',
-                        value: ['2023-01-15', '2023-02-10', '前端开发', 27]
+                    emphasis: {
+                        focus: 'series',
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowColor: 'rgba(54, 207, 201, 0.5)'
+                        }
                     },
-                    {
-                        name: '后端开发',
-                        value: ['2023-01-25', '2023-02-15', '后端开发', 22]
-                    },
-                    {
-                        name: '测试',
-                        value: ['2023-02-12', '2023-02-25', '测试', 14]
-                    },
-                    {
-                        name: '部署上线',
-                        value: ['2023-02-23', '2023-03-01', '部署上线', 7]
-                    }
-                ],
-                encode: {
-                    x: [0, 1],
-                    y: 2
+                    data: (function() {
+                        // 从生成的系列数据中提取第一天数据作为示例
+                        return series2.data[0].data;
+                    })()
                 }
-            }]
+            ]
         };
 
         // 渲染图表
